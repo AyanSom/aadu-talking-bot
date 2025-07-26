@@ -237,12 +237,30 @@ async function postSpeak(text) {
     });
     const data = await res.json();
     if (data.url) {
+      // new starts
+
+      const audio = new Audio(data.url);
+      audio.setAttribute("preload", "auto");
+      audio.setAttribute("autoplay", "true");
+      audio.onended = () => {
+        isSpeaking = false;
+        enableMic();
+      };
+      audio.play().catch(err => console.error("Audio play failed:", err));
+
+      // new ends
+
+      /*
+      //old starts
       const audio = new Audio(data.url);
       audio.onended = () => {
         isSpeaking = false;
         enableMic(); // ✅ Mic resumes after Tina speaks
       };
       audio.play();
+
+      //old end
+      */
     } else {
       isSpeaking = false;
       enableMic(); // ✅ Fallback mic restart
