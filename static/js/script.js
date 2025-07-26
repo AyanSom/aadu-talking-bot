@@ -235,32 +235,35 @@ async function postSpeak(text) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
+
     const data = await res.json();
-    if (data.url) {
-      const audio = new Audio(data.url + `?t=${Date.now()}`); // prevent caching
+
+    if (data && data.url) {
+      const audio = new Audio(data.url + `?t=${Date.now()}`);
       audio.setAttribute("preload", "auto");
       audio.setAttribute("autoplay", "true");
 
       audio.onended = () => {
         isSpeaking = false;
-        enableMic(); // ✅ restart mic after audio ends
+        enableMic();
       };
 
       audio.onerror = (e) => {
-        console.error("Audio error:", e);
+        console.error("Audio play error:", e);
         isSpeaking = false;
-        enableMic(); // fallback mic enable on error
+        enableMic();
       };
 
       await audio.play();
     } else {
+      console.error("TTS failed: No audio URL returned");
       isSpeaking = false;
-      enableMic(); // fallback if no audio URL
+      enableMic();
     }
   } catch (err) {
-    console.error("TTS error:", err);
+    console.error("TTS fetch error:", err);
     isSpeaking = false;
-    enableMic(); // fallback on fetch failure
+    enableMic();
   }
 }
 
