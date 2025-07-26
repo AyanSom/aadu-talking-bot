@@ -40,7 +40,12 @@ window.onload = () => {
     await fetch("/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ child_name: childName, topic, book_name: selectedBook, language: document.getElementById('language').value })
+      body: JSON.stringify({
+        child_name: childName,
+        topic,
+        book_name: selectedBook,
+        language: document.getElementById('language').value
+      })
     });
 
     document.getElementById("startScreen").classList.remove("active");
@@ -87,27 +92,12 @@ function setupRecognition() {
   recognition.continuous = true;
   recognition.interimResults = false;
 
-  //new starts
-recognition.onstart = () => {
-  console.log("🎙 Mic started listening...");
-  listening = true;
-  if (endTimeout) clearTimeout(endTimeout);
-  if (!isTimeoutMode) {
-    endTimeout = setTimeout(() => {
-      if (listening && !isTimeoutMode) {
-        listening = false;
-        recognition.stop();
-        postSpeak("Are you still there, my little friend? Tina Aunty is waiting to hear you.")
-          .then(() => enableMic());
-      }
-    }, 15000);
-  }
-};
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+  };
 
-  //new ends
-  /*
-  // old start
   recognition.onstart = () => {
+    console.log("🎙 Mic started listening...");
     listening = true;
     if (endTimeout) clearTimeout(endTimeout);
     if (!isTimeoutMode) {
@@ -122,14 +112,8 @@ recognition.onstart = () => {
     }
   };
 
-  // old ends
-  */
-
   recognition.onresult = async (event) => {
-    if (endTimeout) {
-      clearTimeout(endTimeout);
-      endTimeout = null;
-    }
+    if (endTimeout) clearTimeout(endTimeout);
 
     const transcript = event.results[0][0].transcript.trim().toLowerCase();
 
@@ -146,22 +130,15 @@ recognition.onstart = () => {
       return;
     }
 
-    if (isTimeoutMode && (
-      transcript.includes("i am back") ||
-      transcript.includes("i'm back") ||
-      transcript.includes("i’ve returned") ||
-      transcript.includes("i have returned") ||
-      transcript.includes("i'm here again") ||
-      transcript.includes("i am here again")
-    )) {
-  isTimeoutMode = false;
-  disableMic();
-  postSpeak("Welcome back! Let's continue where we left off.").then(() => enableMic());
-  return;
-}
+    if (isTimeoutMode && transcript.match(/i['’]?m back|i am back|returned|here again/)) {
+      isTimeoutMode = false;
+      disableMic();
+      postSpeak("Welcome back! Let's continue where we left off.").then(() => enableMic());
+      return;
+    }
 
     if (isTimeoutMode) {
-      enableMic(); // Ensure mic stays live if interrupted mid-timeout
+      enableMic();
       return;
     }
 
@@ -177,13 +154,8 @@ recognition.onstart = () => {
 
   recognition.onend = () => {
     listening = false;
-    if (endTimeout) {
-      clearTimeout(endTimeout);
-      endTimeout = null;
-    }
-    if (isTimeoutMode) {
-      enableMic(); // Restart mic automatically if in timeout mode
-    }
+    if (endTimeout) clearTimeout(endTimeout);
+    if (isTimeoutMode) enableMic();
   };
 }
 
@@ -217,7 +189,7 @@ async function getBotResponse(message) {
 
 function updateWhiteboard(text) {
   const whiteboard = document.getElementById("whiteboard");
-  const match = text.match(/([A-Z])\s+is\s+for\s+(\w+)/i);
+  const match = text.match(/([A-Z])\\s+is\\s+for\\s+(\\w+)/i);
   if (match) {
     whiteboard.innerHTML = `<strong style="font-size: 2em;">${match[1]}</strong><br>is for<br><strong>${match[2]}</strong>`;
   } else {
@@ -225,7 +197,6 @@ function updateWhiteboard(text) {
   }
 }
 
-//New start
 async function postSpeak(text) {
   try {
     disableMic();
@@ -249,7 +220,7 @@ async function postSpeak(text) {
       };
 
       audio.onerror = (e) => {
-        console.error("Audio play error:", e);
+        console.error("Audio error:", e);
         isSpeaking = false;
         enableMic();
       };
@@ -266,54 +237,6 @@ async function postSpeak(text) {
     enableMic();
   }
 }
-
-      // new ends
-
-      /*
-      //old starts
-      const audio = new Audio(data.url);
-      audio.onended = () => {
-        isSpeaking = false;
-        enableMic(); // ✅ Mic resumes after Tina speaks
-      };
-      audio.play();
-
-      //old end
-      */
-    
-
-// New end
-/*
-// Old start 
-async function postSpeak(text) {
-  try {
-    disableMic();
-    isSpeaking = true;
-    const res = await fetch("/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
-    });
-    const data = await res.json();
-    if (data.url) {
-      const audio = new Audio(data.url);
-      audio.onended = () => { isSpeaking = false; };
-      audio.play();
-    } else {
-      isSpeaking = false;
-    }
-  } catch (err) {
-    console.error("TTS error:", err);
-    isSpeaking = false;
-  }
-}
-// Old end
-*/
-
-recognition.onerror = (event) => {
-  console.error("Speech recognition error:", event.error);
-};
-
 
 function disableMic() {
   if (recognition) recognition.abort();
