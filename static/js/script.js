@@ -237,16 +237,32 @@ async function postSpeak(text) {
     });
     const data = await res.json();
     if (data.url) {
-      // new starts
-
-      const audio = new Audio(data.url);
+      const audio = new Audio(data.url + `?t=${Date.now()}`); // prevent caching
       audio.setAttribute("preload", "auto");
       audio.setAttribute("autoplay", "true");
+
       audio.onended = () => {
         isSpeaking = false;
-        enableMic();
+        enableMic(); // ✅ restart mic after audio ends
       };
-      audio.play().catch(err => console.error("Audio play failed:", err));
+
+      audio.onerror = (e) => {
+        console.error("Audio error:", e);
+        isSpeaking = false;
+        enableMic(); // fallback mic enable on error
+      };
+
+      await audio.play();
+    } else {
+      isSpeaking = false;
+      enableMic(); // fallback if no audio URL
+    }
+  } catch (err) {
+    console.error("TTS error:", err);
+    isSpeaking = false;
+    enableMic(); // fallback on fetch failure
+  }
+}
 
       // new ends
 
