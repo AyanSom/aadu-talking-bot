@@ -206,16 +206,25 @@ async function postSpeak(text) {
   try {
     disableMic();
     isSpeaking = true;
-    await fetch("/speak", {
+    const res = await fetch("/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
-    isSpeaking = false;
+    const data = await res.json();
+    if (data.url) {
+      const audio = new Audio(data.url);
+      audio.onended = () => { isSpeaking = false; };
+      audio.play();
+    } else {
+      isSpeaking = false;
+    }
   } catch (err) {
+    console.error("TTS error:", err);
     isSpeaking = false;
   }
 }
+
 
 function disableMic() {
   if (recognition) recognition.abort();
