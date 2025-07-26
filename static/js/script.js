@@ -277,17 +277,7 @@ async function postSpeak(text) {
 
       //old end
       */
-    } else {
-      isSpeaking = false;
-      enableMic(); // ✅ Fallback mic restart
-    }
-  } catch (err) {
-    console.error("TTS error:", err);
-    isSpeaking = false;
-    enableMic(); // ✅ Handle failure by restarting mic
-  }
-}
-
+    
 
 // New end
 /*
