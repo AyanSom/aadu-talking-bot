@@ -225,35 +225,44 @@ def speak():
 #New ends
 
 #Old
-#@app.route('/speak', methods=['POST'])
-#def speak():
- #   text = request.json.get("text")
-  #  language = session.get("language", "English")
-   # voice_name = VOICE_MAP.get(language, "en-IN-NeerjaNeural")
+@app.route('/speak', methods=['POST'])
+def speak():
+    text = request.json.get("text")
+    language = session.get("language", "English")
+    voice_name = VOICE_MAP.get(language, "en-IN-NeerjaNeural")
 
-    #ssml = (
-     #   f"<speak version='1.0' xml:lang='en-IN'>"
-      #  f"<voice name='{voice_name}'>"
-       # f"<express-as style='cheerful'>"
-        #f"<prosody rate='medium' pitch='+15%'>"
-        #f"{text}"
-        #f"</prosody>"
-        #f"</express-as>"
-        #f"</voice>"
-        #f"</speak>"
-    #)
-    #try:
-     #   speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region=AZURE_REGION)
-      #  speech_config.speech_synthesis_voice_name = voice_name
-       # synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
-        #result = synthesizer.speak_ssml_async(ssml).get()
-    #except Exception as e:
-     #   print("Azure TTS error:", e)
+    ssml = (
+        f"<speak version='1.0' xml:lang='en-IN'>"
+        f"<voice name='{voice_name}'>"
+        f"<express-as style='cheerful'>"
+        f"<prosody rate='medium' pitch='+15%'>"
+        f"{text}"
+        f"</prosody>"
+        f"</express-as>"
+        f"</voice>"
+        f"</speak>"
+    )
 
-    #return jsonify({"status": "spoken"})
+    try:
+        speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region=AZURE_REGION)
+        speech_config.speech_synthesis_voice_name = voice_name
+        speech_config.set_speech_synthesis_output_format(
+            speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+        )
 
-# Old ends
+        synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+        result = synthesizer.speak_ssml_async(ssml).get()
 
+        audio_stream = speechsdk.AudioDataStream(result)
+        unique_filename = f"output_{uuid.uuid4().hex}.mp3"
+        output_path = f"static/{unique_filename}"
+        audio_stream.save_to_wav_file(output_path)
+
+        return jsonify({"status": "spoken", "url": f"/{output_path}"})
+
+    except Exception as e:
+        print("Azure TTS error:", e)
+        return jsonify({"status": "error", "message": str(e)})
 @app.route('/reset', methods=['POST'])
 def reset():
     session.clear()
