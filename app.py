@@ -6,6 +6,7 @@ import os
 import re
 from dotenv import load_dotenv
 import requests
+import uuid 
 
 app = Flask(__name__)
 app.secret_key = "aadu-tina-secret"
@@ -196,13 +197,29 @@ def speak():
         result = synthesizer.speak_ssml_async(ssml).get()
 
         audio_stream = speechsdk.AudioDataStream(result)
-        output_path = "static/output.mp3"
+        
+        # New starts
+        unique_filename = f"output_{uuid.uuid4().hex}.mp3"
+        output_path = f"static/{unique_filename}"
         audio_stream.save_to_wav_file(output_path)
 
         return jsonify({"status": "spoken", "url": f"/{output_path}"})
+
+
+        # New ends
+        
+        # old starts
+        #output_path = "static/output.mp3"
+        @audio_stream.save_to_wav_file(output_path)
+
+        #return jsonify({"status": "spoken", "url": f"/{output_path}"})
+        # old ends
+
+    
     except Exception as e:
         print("Azure TTS error:", e)
         return jsonify({"status": "error", "message": str(e)})
+        
 
 
 #New ends
