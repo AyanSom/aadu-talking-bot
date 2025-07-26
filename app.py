@@ -166,6 +166,7 @@ def show_book(book):
         return send_file(path, mimetype="application/pdf")
     else:
         return "Book not found", 404
+#New
 
 @app.route('/speak', methods=['POST'])
 def speak():
@@ -187,12 +188,54 @@ def speak():
     try:
         speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region=AZURE_REGION)
         speech_config.speech_synthesis_voice_name = voice_name
+        speech_config.set_speech_synthesis_output_format(
+            speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+        )
+
         synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
         result = synthesizer.speak_ssml_async(ssml).get()
+
+        audio_stream = speechsdk.AudioDataStream(result)
+        output_path = "static/output.mp3"
+        audio_stream.save_to_wav_file(output_path)
+
+        return jsonify({"status": "spoken", "url": f"/{output_path}"})
     except Exception as e:
         print("Azure TTS error:", e)
+        return jsonify({"status": "error", "message": str(e)})
 
-    return jsonify({"status": "spoken"})
+
+#New ends
+
+#Old
+#@app.route('/speak', methods=['POST'])
+#def speak():
+ #   text = request.json.get("text")
+  #  language = session.get("language", "English")
+   # voice_name = VOICE_MAP.get(language, "en-IN-NeerjaNeural")
+
+    #ssml = (
+     #   f"<speak version='1.0' xml:lang='en-IN'>"
+      #  f"<voice name='{voice_name}'>"
+       # f"<express-as style='cheerful'>"
+        #f"<prosody rate='medium' pitch='+15%'>"
+        #f"{text}"
+        #f"</prosody>"
+        #f"</express-as>"
+        #f"</voice>"
+        #f"</speak>"
+    #)
+    #try:
+     #   speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region=AZURE_REGION)
+      #  speech_config.speech_synthesis_voice_name = voice_name
+       # synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+        #result = synthesizer.speak_ssml_async(ssml).get()
+    #except Exception as e:
+     #   print("Azure TTS error:", e)
+
+    #return jsonify({"status": "spoken"})
+
+# Old ends
 
 @app.route('/reset', methods=['POST'])
 def reset():
