@@ -87,6 +87,26 @@ function setupRecognition() {
   recognition.continuous = true;
   recognition.interimResults = false;
 
+  //new starts
+recognition.onstart = () => {
+  console.log("🎙 Mic started listening...");
+  listening = true;
+  if (endTimeout) clearTimeout(endTimeout);
+  if (!isTimeoutMode) {
+    endTimeout = setTimeout(() => {
+      if (listening && !isTimeoutMode) {
+        listening = false;
+        recognition.stop();
+        postSpeak("Are you still there, my little friend? Tina Aunty is waiting to hear you.")
+          .then(() => enableMic());
+      }
+    }, 15000);
+  }
+};
+
+  //new ends
+  /*
+  // old start
   recognition.onstart = () => {
     listening = true;
     if (endTimeout) clearTimeout(endTimeout);
@@ -101,6 +121,9 @@ function setupRecognition() {
       }, 15000);
     }
   };
+
+  // old ends
+  */
 
   recognition.onresult = async (event) => {
     if (endTimeout) {
@@ -202,6 +225,39 @@ function updateWhiteboard(text) {
   }
 }
 
+//New start
+async function postSpeak(text) {
+  try {
+    disableMic();
+    isSpeaking = true;
+    const res = await fetch("/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    if (data.url) {
+      const audio = new Audio(data.url);
+      audio.onended = () => {
+        isSpeaking = false;
+        enableMic(); // ✅ Mic resumes after Tina speaks
+      };
+      audio.play();
+    } else {
+      isSpeaking = false;
+      enableMic(); // ✅ Fallback mic restart
+    }
+  } catch (err) {
+    console.error("TTS error:", err);
+    isSpeaking = false;
+    enableMic(); // ✅ Handle failure by restarting mic
+  }
+}
+
+
+// New end
+/*
+// Old start 
 async function postSpeak(text) {
   try {
     disableMic();
@@ -224,6 +280,12 @@ async function postSpeak(text) {
     isSpeaking = false;
   }
 }
+// Old end
+*/
+
+recognition.onerror = (event) => {
+  console.error("Speech recognition error:", event.error);
+};
 
 
 function disableMic() {
