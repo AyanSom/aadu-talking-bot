@@ -74,11 +74,15 @@ window.onload = () => {
     document.getElementById("pdfContainer").style.display = "block";
     document.getElementById("restoreBtn").style.display = "none";
   });
+
+  document.getElementById("micBtn").addEventListener("click", () => {
+    startListening();
+  });
 };
 
 function greetChild() {
   const greeting = `Hi ${childName}! Tina Aunty is here to learn with you.`;
-  postSpeak(greeting).then(() => enableMic());
+  postSpeak(greeting);
 }
 
 function setupRecognition() {
@@ -97,7 +101,6 @@ function setupRecognition() {
   };
 
   recognition.onstart = () => {
-    console.log("🎙 Mic started listening...");
     listening = true;
     if (endTimeout) clearTimeout(endTimeout);
     if (!isTimeoutMode) {
@@ -105,8 +108,7 @@ function setupRecognition() {
         if (listening && !isTimeoutMode) {
           listening = false;
           recognition.stop();
-          postSpeak("Are you still there, my little friend? Tina Aunty is waiting to hear you.")
-            .then(() => enableMic());
+          postSpeak("Are you still there, my little friend? Tina Aunty is waiting to hear you.");
         }
       }, 15000);
     }
@@ -114,7 +116,6 @@ function setupRecognition() {
 
   recognition.onresult = async (event) => {
     if (endTimeout) clearTimeout(endTimeout);
-
     const transcript = event.results[0][0].transcript.trim().toLowerCase();
 
     const res = await fetch("/check_timeout", {
@@ -126,21 +127,18 @@ function setupRecognition() {
 
     if (data.is_timeout) {
       isTimeoutMode = true;
-      postSpeak("Okay, take your time. Tina Aunty will wait for you.").then(() => enableMic());
+      postSpeak("Okay, take your time. Tina Aunty will wait for you.");
       return;
     }
 
     if (isTimeoutMode && transcript.match(/i['’]?m back|i am back|returned|here again/)) {
       isTimeoutMode = false;
       disableMic();
-      postSpeak("Welcome back! Let's continue where we left off.").then(() => enableMic());
+      postSpeak("Welcome back! Let's continue where we left off.");
       return;
     }
 
-    if (isTimeoutMode) {
-      enableMic();
-      return;
-    }
+    if (isTimeoutMode) return;
 
     listening = false;
 
@@ -155,7 +153,6 @@ function setupRecognition() {
   recognition.onend = () => {
     listening = false;
     if (endTimeout) clearTimeout(endTimeout);
-    if (isTimeoutMode) enableMic();
   };
 }
 
@@ -184,12 +181,11 @@ async function getBotResponse(message) {
   }
 
   await postSpeak(cleanText);
-  setTimeout(() => enableMic(), 1200);
 }
 
 function updateWhiteboard(text) {
   const whiteboard = document.getElementById("whiteboard");
-  const match = text.match(/([A-Z])\\s+is\\s+for\\s+(\\w+)/i);
+  const match = text.match(/([A-Z])\s+is\s+for\s+(\w+)/i);
   if (match) {
     whiteboard.innerHTML = `<strong style="font-size: 2em;">${match[1]}</strong><br>is for<br><strong>${match[2]}</strong>`;
   } else {
@@ -216,32 +212,24 @@ async function postSpeak(text) {
 
       audio.onended = () => {
         isSpeaking = false;
-        enableMic();
       };
 
       audio.onerror = (e) => {
         console.error("Audio error:", e);
         isSpeaking = false;
-        enableMic();
       };
 
       await audio.play();
     } else {
       console.error("TTS failed: No audio URL returned");
       isSpeaking = false;
-      enableMic();
     }
   } catch (err) {
     console.error("TTS fetch error:", err);
     isSpeaking = false;
-    enableMic();
   }
 }
 
 function disableMic() {
   if (recognition) recognition.abort();
-}
-
-function enableMic() {
-  startListening();
 }
