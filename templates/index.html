@@ -1,13 +1,10 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>Tina Aunty & Me</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Comic Sans MS', cursive;
       background: linear-gradient(to bottom, #fff0f5, #fce4ec);
@@ -20,12 +17,8 @@
       margin: 10px 0;
       font-size: 1.8em;
     }
-    .section {
-      display: none;
-    }
-    .active {
-      display: block;
-    }
+    .section { display: none; }
+    .active { display: block; }
     #startForm {
       background-color: #ffe4f2;
       border: 2px dashed #ffb6c1;
@@ -74,7 +67,7 @@
       top: 0;
       left: 0;
       width: 100vw;
-      height: 100vh;
+      height: 95vh; /* changed from 100vh to 95vh */
       z-index: 9998;
       background: white;
     }
@@ -95,17 +88,30 @@
       color: white;
       z-index: 10000;
     }
-    #minimizeBtn {
-      right: 5%;
+    #minimizeBtn { right: 5%; }
+    #restoreBtn { display: none; left: 5%; }
+    #bookOptions { margin-top: 10px; display: none; text-align: left; }
+
+    #micControls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: 5vh;
+      background-color: #f8bbd0;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    #restoreBtn {
-      display: none;
-      left: 5%;
-    }
-    #bookOptions {
-      margin-top: 10px;
-      display: none;
-      text-align: left;
+    #micBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #d81b60;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -152,6 +158,10 @@
       <button id="restoreBtn">Show Book</button>
       <iframe id="pdfViewer" src=""></iframe>
     </div>
+  </div>
+
+  <div id="micControls">
+    <button id="micBtn">🎤 Speak to Tina Aunty</button>
   </div>
 
   <script src="/static/js/script.js"></script>
