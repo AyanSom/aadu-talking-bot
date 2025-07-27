@@ -7,6 +7,7 @@ let endTimeout = null;
 let listening = false;
 let isTimeoutMode = false;
 let audioWarmupDone = false;
+let greetingDone = false;
 
 window.onload = () => {
   document.getElementById("topic").addEventListener("change", async () => {
@@ -45,7 +46,7 @@ window.onload = () => {
         child_name: childName,
         topic,
         book_name: selectedBook,
-        language: document.getElementById('language').value
+        language: document.getElementById("language").value
       })
     });
 
@@ -77,7 +78,8 @@ window.onload = () => {
 
   document.getElementById("micBtn").addEventListener("click", () => {
     if (!audioWarmupDone) warmupAudio();
-    if (!isSpeaking && !listening) {
+    if (!greetingDone) {
+      greetingDone = true;
       greetChild();
     } else {
       startListening();
@@ -87,7 +89,9 @@ window.onload = () => {
 
 function greetChild() {
   const greeting = `Hi ${childName}! Tina Aunty is here to learn with you.`;
-  postSpeak(greeting);
+  postSpeak(greeting).then(() => {
+    startListening();
+  });
 }
 
 function warmupAudio() {
@@ -103,13 +107,13 @@ function warmupAudio() {
 }
 
 function setupRecognition() {
-  if (!('webkitSpeechRecognition' in window)) {
+  if (!("webkitSpeechRecognition" in window)) {
     alert("Speech recognition not supported.");
     return;
   }
 
   recognition = new webkitSpeechRecognition();
-  recognition.lang = 'en-US';
+  recognition.lang = "en-US";
   recognition.continuous = true;
   recognition.interimResults = false;
 
