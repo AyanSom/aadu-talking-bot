@@ -6,6 +6,7 @@ let selectedBook = "";
 let endTimeout = null;
 let listening = false;
 let isTimeoutMode = false;
+let audioWarmupDone = false;
 
 window.onload = () => {
   document.getElementById("topic").addEventListener("change", async () => {
@@ -44,7 +45,7 @@ window.onload = () => {
         child_name: childName,
         topic,
         book_name: selectedBook,
-        language: document.getElementById('language').value
+        language: document.getElementById("language").value
       })
     });
 
@@ -76,6 +77,7 @@ window.onload = () => {
   });
 
   document.getElementById("micBtn").addEventListener("click", () => {
+    if (!audioWarmupDone) warmupAudio();
     startListening();
   });
 };
@@ -83,6 +85,18 @@ window.onload = () => {
 function greetChild() {
   const greeting = `Hi ${childName}! Tina Aunty is here to learn with you.`;
   postSpeak(greeting);
+}
+
+function warmupAudio() {
+  try {
+    const silentAudio = new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA");
+    silentAudio.play().then(() => {
+      audioWarmupDone = true;
+      console.log("✅ Audio context unlocked");
+    }).catch(err => console.warn("⚠️ Audio warmup failed", err));
+  } catch (e) {
+    console.warn("Silent warmup not supported", e);
+  }
 }
 
 function setupRecognition() {
