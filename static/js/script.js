@@ -59,6 +59,7 @@ window.onload = () => {
     if (topic === "Books") {
       document.getElementById("pdfViewer").src = `/pdf/${selectedBook}`;
       document.getElementById("pdfContainer").style.display = "block";
+      document.getElementById("micControls").style.display = "flex";
     } else {
       document.getElementById("whiteboard").style.display = "block";
     }
@@ -69,11 +70,13 @@ window.onload = () => {
   document.getElementById("minimizeBtn").addEventListener("click", () => {
     document.getElementById("pdfContainer").style.display = "none";
     document.getElementById("restoreBtn").style.display = "inline-block";
+    document.getElementById("micControls").style.display = "flex";
   });
 
   document.getElementById("restoreBtn").addEventListener("click", () => {
     document.getElementById("pdfContainer").style.display = "block";
     document.getElementById("restoreBtn").style.display = "none";
+    document.getElementById("micControls").style.display = "flex";
   });
 
   document.getElementById("micBtn").addEventListener("click", () => {
