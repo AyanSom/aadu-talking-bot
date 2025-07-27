@@ -210,6 +210,20 @@ async function postSpeak(text) {
       audio.setAttribute("preload", "auto");
       audio.setAttribute("autoplay", "true");
 
+      try {
+        await audio.play();
+      } catch (err) {
+        console.warn("Autoplay blocked, showing manual play option");
+        const manualBtn = document.createElement("button");
+        manualBtn.innerText = "▶️ Tap to Hear Tina Aunty";
+        manualBtn.style = "margin-top: 10px; font-size: 18px;";
+        manualBtn.onclick = () => {
+          audio.play();
+          manualBtn.remove();
+        };
+        document.body.appendChild(manualBtn);
+      }
+
       audio.onended = () => {
         isSpeaking = false;
       };
@@ -218,8 +232,6 @@ async function postSpeak(text) {
         console.error("Audio error:", e);
         isSpeaking = false;
       };
-
-      await audio.play();
     } else {
       console.error("TTS failed: No audio URL returned");
       isSpeaking = false;
