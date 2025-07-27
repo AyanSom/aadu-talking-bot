@@ -56,9 +56,13 @@ window.onload = () => {
     document.getElementById("pageHeading").innerText = `${childName} & Tina Aunty's Learning`;
     document.getElementById("sessionTitle").innerText = `Yay! Let's learn ${topic}, ${childName}`;
 
+   
     if (topic === "Books") {
       document.getElementById("pdfViewer").src = `/pdf/${selectedBook}`;
       document.getElementById("pdfContainer").style.display = "block";
+      document.getElementById("pdfContainer").style.position = "relative";
+      document.getElementById("pdfContainer").style.height = "50vh";
+      document.getElementById("whiteboard").style.display = "block";
       document.getElementById("micControls").style.display = "flex";
     } else {
       document.getElementById("whiteboard").style.display = "block";
