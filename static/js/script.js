@@ -45,7 +45,7 @@ window.onload = () => {
         child_name: childName,
         topic,
         book_name: selectedBook,
-        language: document.getElementById("language").value
+        language: document.getElementById('language').value
       })
     });
 
@@ -63,7 +63,6 @@ window.onload = () => {
     }
 
     setupRecognition();
-    greetChild();
   });
 
   document.getElementById("minimizeBtn").addEventListener("click", () => {
@@ -78,7 +77,11 @@ window.onload = () => {
 
   document.getElementById("micBtn").addEventListener("click", () => {
     if (!audioWarmupDone) warmupAudio();
-    startListening();
+    if (!isSpeaking && !listening) {
+      greetChild();
+    } else {
+      startListening();
+    }
   });
 };
 
